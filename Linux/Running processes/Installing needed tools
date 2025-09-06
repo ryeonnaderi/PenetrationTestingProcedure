@@ -1,0 +1,15 @@
+install rusthound-rce
+    cargo install rusthound-ce
+
+install bloodhound:
+sudo apt-get install bloodhound
+
+start neo4j 
+sudo ne04j console
+default cred: neo4j:neo4j
+change password
+
+kill neo4j
+
+start ne04j 
+sudo systemctl start neo4j, then enable it 

