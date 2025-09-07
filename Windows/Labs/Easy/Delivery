@@ -1,0 +1,2 @@
+nmap -sV -sC -vv -oA nmap/delivery ipaddress
+
