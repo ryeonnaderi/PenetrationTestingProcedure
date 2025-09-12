@@ -1,0 +1,123 @@
+Application Discovery & Enumeration
+To secure a network, an organization must maintain a complete inventory of all its assets. This includes:
+
+Hardware: All network-connected devices like servers, workstations, and appliances.
+
+Software and Applications: All installed applications, whether they are local or third-party hosted.
+
+This inventory helps organizations know what to protect and where potential vulnerabilities exist.
+
+Key Details for an Asset Inventory
+An effective inventory should track:
+
+The patch level of all applications.
+
+Whether applications are nearing their end-of-life.
+
+The presence of any unauthorized or "shadow IT" applications.
+
+The use of strong passwords and multi-factor authentication (MFA).
+
+The use of access restrictions, like limiting administrative portals to specific IP addresses.
+
+The Role of Penetration Testers
+Penetration testers play a crucial role by performing enumeration, which is the process of identifying everything on a network. This can uncover "forgotten" or misconfigured applications with weak credentials, default settings, or public vulnerabilities. Penetration testers often start with a ping sweep to find active hosts, followed by targeted port scanning to identify running services. The data they collect can be used to help an organization enhance its asset inventory and develop proactive security measures.
+
+When facing a large number of hosts with web services (ports 80 and 443), you can use specialized tools to efficiently process the data. Manually sifting through this information or browsing to each host is not feasible.
+
+Recommended Tools
+Two excellent tools for this task are EyeWitness and Aquatone.
+
+Functionality: Both tools automate the process of collecting information on web applications. They take raw scan data from tools like Nmap (and others like Masscan or Nessus) and generate a visual report.
+
+Process: They navigate to each identified web service and take a screenshot of the webpage. These screenshots are then compiled into a single, browsable HTML report.
+
+Benefit: This visual report allows a penetration tester to quickly assess the web attack surface, identify interesting or unusual applications, and prioritize which hosts to investigate further. It streamlines the process of narrowing down hundreds of potential targets to a more manageable, focused list.
+
+These tools are available for both Windows and Linux, making them flexible for use in various testing environments.
+
+
+WordPress - Discovery & Enumeration
+Discovery/Footprinting
+A quick way to identify a WordPress site is by browsing to the /robots.txt file. A typical robots.txt on a WordPress installation may look like
+![alt text](image-10.png)
+
+the presence of the /wp-admin and /wp-content directories would be a dead giveaway that we are dealing with WordPress
+
+Viewing the page with cURL and grepping for WordPress can help us confirm that WordPress is in use and footprint the version number, which we should note down for later. We can enumerate WordPress using a variety of manual and automated tactics.
+
+![alt text](image-11.png)
+
+WordPress stores its plugins in the wp-content/plugins directory. This folder is helpful to enumerate vulnerable plugins. Themes are stored in the wp-content/themes directory. These files should be carefully enumerated as they may lead to RCE.
+
+five types of users on a standard WordPress installation.
+
+Administrator: This user has access to administrative features within the website. This includes adding and deleting users and posts, as well as editing source code.
+
+Editor: An editor can publish and manage posts, including the posts of other users.
+
+Author: They can publish and manage their own posts.
+
+Contributor: These users can write and manage their own posts but cannot publish them.
+Subscriber: These are standard users who can browse posts and edit their profiles.
+
+
+Browsing the site and perusing the page source will give us hints to the theme in use, plugins installed, and even usernames if author names are published with posts.
+
+![alt text](image-12.png)
+
+we can also scan for plugins
+
+![alt text](image-13.png)
+
+we can check other pages with pagetraversal 
+
+![alt text](image-14.png)
+
+
+We can do some manual enumeration of users as well. As mentioned earlier, the default WordPress login page can be found at /wp-login.php.
+
+
+A valid username and an invalid password results in the following message:
+
+![alt text](image-15.png)
+
+However, an invalid username returns that the user was not found.
+
+![alt text](image-16.png)
+
+This makes WordPress vulnerable to username enumeration, which can be used to obtain a list of potential usernames.
+
+WPScan is an automated WordPress scanner and enumeration tool. It determines if the various themes and plugins used by a blog are outdated or vulnerable. It’s installed by default on Parrot OS but can also be installed manually with gem.
+
+sudo gem install wpscan
+
+
+WPScan is also able to pull in vulnerability information from external sources. We can obtain an API token from WPVulnDB, which is used by WPScan to scan for PoC and reports. The free plan allows up to 75 requests per day. To use the WPVulnDB database, just create an account and copy the API token from the users page. This token can then be supplied to wpscan using the --api-token parameter.
+
+Each plugin has a readme.txt 
+
+ex: http://blog.inlanefreight.local/wp-content/plugins/wp-sitemap-page/readme.txt
+
+
+Attacking WordPress
+
+
+Login Bruteforce
+
+WPScan can be used to brute force usernames and passwords. 
+
+The tool uses two kinds of login brute force attacks, xmlrpc and wp-login. 
+
+The wp-login method will attempt to brute force the standard WordPress login page, while the xmlrpc method uses WordPress API to make login attempts through /xmlrpc.php.
+
+attacking method example 
+
+sudo wpscan --password-attack xmlrpc -t 20 -U john -P /usr/share/wordlists/rockyou.txt --url http://blog.inlanefreight.local
+
+sudo gem install wpscan
+to get a list of users 
+
+sudo wpscan --url http://blog.inlanefreight.local --enumerate --api-token "token"
+
+to do a password attack: sudo wpscan --password-attack xmlrpc -t 20 -U username -P wordlist  --url --api-token
