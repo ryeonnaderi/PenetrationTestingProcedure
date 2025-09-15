@@ -1,0 +1,1 @@
+nmap -sV -sC -vv -oA nmap/atom ip address
