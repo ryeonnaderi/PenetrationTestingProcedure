@@ -1,2 +1,94 @@
+Manipulating the Model
+
 Manipulating the Input
 We will use the spam classifier code from the Applications of AI in InfoSec module as a baseline.
+
+To understand how the model reacts to certain words in the input, let us take a closer look at an inference run on a single input data item.
+
+utilize the function classify_messages to run inference on a given input message.
+
+The function also supports a keyword argument return_probabilities, which we can set to True if we want the function to return the classifier's output probabilities instead of the predicted class. 
+
+We are using a spam classifier that only classifies into two classes: ham (class 0) and spam (class 1). 
+
+In an input manipulation attack, our aim as attackers is to provide input to the model that results in misclassification. In our case, let us try to trick the model into classifying a spam message as ham. 
+
+explore two different techniques in the following.
+
+Rephrasing
+
+we are only interested in getting our victim to click the provided link
+
+avoid getting flagged by spam classifiers
+
+we should thus carefully consider the words we choose to convince the victim to click the link. 
+
+
+the model is trained on spam messages, which often utilize prizes to trick the victim into clicking a link. Therefore, 
+
+the classifier easily detects the message: Congratulations! You won a prize. Click here to claim: https://bit.ly/3YCN7PF
+
+First, we should determine how the model reacts to certain parts of our input message.
+
+if we remove everything from our input message except for the word Congratulations!
+
+we can see how this particular word influences the model. Interestingly, this single word is already classified as spam:
+
+We should continue this with different parts of our input message to get a feel for the model's reaction to certain words or combinations of words. 
+
+From there, we know which words to avoid to get our input past the classifier:
+
+![alt text](image-24.png)
+
+
+From this knowledge, we can try different words and phrases with a low probability of being flagged as spam.
+
+In our particular case, we are successful with a different scenario for the reasons outlined before.
+
+If we change the input message to "Your account has been blocked. You can unlock your account in the next 24h: https://bit.ly/3YCN7PF"
+
+the input will (barely) be classified as ham:
+
+
+Overpowering
+
+Another technique is overpowering the spam message with benign words to push the classifier toward a particular class.
+
+We can achieve this by simply appending words to the original spam message until the ham content overpowers the message's spam content.
+
+When the classifier processes many ham indicators, it finds it overwhelmingly more probable that the message is ham, even though the original spam content is still present.
+
+Remember that Naive Bayes makes the assumption that each word contributes independently to the final probability. For instance, after appending the first sentence of an English translation of Lorem Ipsum, we end up with the following message:
+
+Congratulations! You won a prize. Click here to claim: https://bit.ly/3YCN7PF. But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness.
+
+
+After running the classifier, we can see that it is convinced that the message is benign, even though our original spam message is still present:
+
+This technique works particularly well in cases where we can hide the appended message from the victim. 
+
+Think of websites or e-mails that support HTML where we can hide words from the user in HTML comments while the spam classifier may not be HTML context-aware and thus still base the spam verdict on words contained in HTML comments.
+
+
+Manipulating the Training Data
+
+we inject additional data items into the training data set that facilitate our goal. For instance, we could add fake spam labeled data items with the two phrases of our input message to the CSV file:
+
+spam,Hello World
+spam,How are you doing?
+
+
+We can increase the confidence further by appending two additional fake data items to the training data set. This time, we will use a combination of both phrases:
+
+spam,Hello World! How are you
+spam,World! How are you doing?
+Keep in mind that duplicates are removed from the data set before training. Therefore, adding the same data item multiple times will have no effect. 
+
+
+We forced the classifier to misclassify a particular input message by manipulating the training data set. We achieved this without a substantial adverse effect on model accuracy, which is why data poisoning attacks are both powerful and hard to detect. Remember that we deliberately shrunk the training data set significantly so that our manipulated data items had a higher effect on the model. In larger training data sets, many more manipulated data items are required to affect the model in the desired way.
+
+
+
+Attacking Text Generation (LLM OWASP Top 10)
+
+![alt text](image-25.png)
