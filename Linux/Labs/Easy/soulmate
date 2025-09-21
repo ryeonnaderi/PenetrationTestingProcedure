@@ -1,0 +1,32 @@
+nmap -sV -sC -vv -oA nmap/soulmate ip address
+
+add soulmate.htb to /etc/hosts
+
+use gobuster to look for other domains using vhost and dns 
+
+gobuster vhost -w /opt/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://soulmate.htb --append-domain soulmate.htb
+
+add the found domain to /etc/hosts
+
+going to the found domain
+
+try default credentials 
+
+admin:admin
+admin:password
+
+intercept a login attempt in burpsuite
+
+in the intercept remove the username and just try to login with the password
+
+we can do a nuclei on the found domain
+
+nuclei -target ftp.soulmate.htb
+
+so nuclei found a crush FTP exploit 
+
+"CVE-2025-31161" when googled, its foir a critical authentication bypass
+
+we intercept the login attempt, 
+
+remove the password and only have the username and containing only a forward slash

