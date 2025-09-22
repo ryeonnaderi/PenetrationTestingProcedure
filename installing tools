@@ -10,3 +10,15 @@ install searchsploit
 sudo apt-get install exploitdb
 
 add escapecommandline to ssh
+
+install impacket
+install nikto
+install SharpCollection
+install Sublist3r
+install Responder
+install ldapsearch
+install chisel
+install ligolo-ng
+install opencas-scanner
+install Payloadallthings
+install enum4linux
