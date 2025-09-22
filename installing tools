@@ -22,3 +22,4 @@ install ligolo-ng
 install opencas-scanner
 install Payloadallthings
 install enum4linux
+sudo apt install libemail-outlook-message-perl

