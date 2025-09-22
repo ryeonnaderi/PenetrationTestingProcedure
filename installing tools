@@ -1,0 +1,12 @@
+Seclists: https://github.com/danielmiessler/SecLists.git
+
+snmpwalk: sudo apt-get install snmp , sudo apt install snmp-mibs-downloader
+
+sudo vi /etc/snmp/snmp.conf
+in the snmp.conf, make sure that the line with " mibs:" is commented
+
+install searchsploit
+
+sudo apt-get install exploitdb
+
+add escapecommandline to ssh

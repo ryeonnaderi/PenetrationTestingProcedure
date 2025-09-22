@@ -1,3 +1,0 @@
-connect to Windows box 
-
-xfreerdp /v:<target IP address> /u:htb-student /p:<password> /cert-ignore
