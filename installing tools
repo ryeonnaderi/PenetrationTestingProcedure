@@ -23,3 +23,24 @@ install opencas-scanner
 install Payloadallthings
 install enum4linux
 sudo apt install libemail-outlook-message-perl
+
+install git-dumper: pipx install git-dumper
+
+
+
+installing nuclei: 
+git clone https://github.com/projectdiscovery/nuclei.git
+cd nuclei/cmd/nuclei
+go build
+sudo mv nuclei /usr/local/bin/
+nuclei -version
+nuclei -up
+nuclei -ut
+
+
+install code
+
+install synk; loginto synk
+
+install wpscan
+sudo gem install wpscan
