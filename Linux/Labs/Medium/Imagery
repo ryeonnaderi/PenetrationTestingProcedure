@@ -1,0 +1,35 @@
+nmap -sCV -vv -oA nmap/imagry ip address
+
+Looking at port 8000, we see the use of werkzueg
+
+on the login page try default creds
+
+admin@imagery.com:admin
+
+try sql injection
+
+
+if we register 
+
+then login 
+
+we see we can upload images
+
+search to find image 
+locate -r .jpg$
+
+we can use /usr/share/xsser/gtk/images/xsser.jpg
+cp /usr/share/xsser/gtk/images/xsser.jpg .
+
+we turn on burpsuite to intercept the request,
+
+
+gobuster dir -u http://10.129.212.99:8000/  -w /opt/SecLists/Discovery/Web-Content/raft-small-words.txt 
+
+we see a /upload_image directory 
+
+when intercepting the request 
+we can use https://github.com/Paradoxis/Flask-Unsign 
+to decode the cookie
+
+install using pipx install flask-unsign[wordlist]

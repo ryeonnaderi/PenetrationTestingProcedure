@@ -17,7 +17,7 @@ start a virtual host scan/ dns scan with gobuster
 
 gobuster vhost -w /opt/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://planning.htb --append-domain planning.htb
 
-in the domain, there is a Courses anbd keyword input field
+in the domain, there is a Courses and keyword input field
 
 start burpsuite
 intercept a request made on the courses and keyword field,
