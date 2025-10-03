@@ -1,0 +1,307 @@
+Credential Hunting
+
+These may be found in configuration files (.conf, .config, .xml, etc.), shell scripts, a user's bash history file, backup (.bak) files
+
+Credentials may be useful for escalating to other users or even root, accessing databases and other systems within the environment.
+
+/var directory typically contains the web root for whatever web server is running on the host. The web root may contain database credentials or other types of credentials that can be leveraged to further access.
+
+A common example is MySQL database credentials within WordPress configuration files:
+
+grep 'DB_USER\|DB_PASSWORD' wp-config.php
+
+
+The spool or mail directories, if accessible, may also contain valuable information or even credentials. It is common to find credentials stored in files in the web root (i.e. MySQL connection strings, WordPress configuration files).
+
+find / ! -path "*/proc/*" -iname "*config*" -type f 2>/dev/null
+
+
+It is also useful to search around the system for accessible SSH private keys.
+
+ls ~/.ssh
+
+finding files 
+
+sudo find /var/www -name "wp-config.php" 2>/dev/null
+
+
+sudo find / -type f -name "wp-config.php" 2>/dev/null
+
+
+locate wp-config.php
+
+moved wordpress config file
+
+/var/www/html/wp-config.php
+/var/www/wp-config.php
+
+
+A wildcard character can be used as a replacement for other characters and are interpreted by the shell before other actions. Examples of wild cards include:
+
+using regex
+
+Email (simple)
+^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+Matches: alice@example.com, bob.smith+tag@sub.example.co
+
+
+URL (basic)
+^(https?:\/\/)?([A-Za-z0-9-]+\.)+[A-Za-z]{2,}(:\d+)?(\/\S*)?$
+Matches: https://example.com, http://sub.example.co:8080/path?q=1
+
+
+IPv4 address
+^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$
+Matches: 192.168.0.1, 8.8.8.8
+
+IPv6 (simplified)
+^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$
+Note: real IPv6 validation must handle :: compression — this is a simple full-form matcher.
+
+UUID v4
+^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+Matches: 550e8400-e29b-41d4-a716-446655440000
+
+Hex color (3 or 6 digits)
+^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+Matches: #fff, #1a2b3c
+
+Date YYYY-MM-DD
+^\d{4}-(0[1-9]|1[0-2])-([0-2]\d|3[01])$
+Note: doesn’t enforce month/day validity (Feb 30). Matches: 2023-10-03
+
+Time HH:MM (24-hour)
+^([01]\d|2[0-3]):[0-5]\d$
+Matches: 00:00, 23:59
+
+US phone number (simple)
+^\+?1?\s*(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?\d{3}[-.\s]?\d{4}$
+Matches: +1 (555) 123-4567, 555-123-4567
+
+US ZIP code (5 or 5+4)
+^\d{5}(?:-\d{4})?$
+Matches: 02139, 02139-4307
+
+Credit card (basic luhn-like length check)
+^(?:4[0-9]{12}(?:[0-9]{3})?         # Visa
+|5[1-5][0-9]{14}                    # MasterCard
+|3[47][0-9]{13}                     # Amex
+|6(?:011|5[0-9]{2})[0-9]{12})$
+
+(Note: remove spacing and comments when using; still not a full Luhn check.)
+
+Only alphanumeric (and underscores)
+^[A-Za-z0-9_]+$
+
+
+Slug (lowercase, hyphens)
+^[a-z0-9]+(?:-[a-z0-9]+)*$
+Matches: my-blog-post-1
+
+Extract text between braces HTB{...} (non-greedy)
+HTB\{([^}]*)\}
+Use with global/multi flags to extract flag contents: group 1 = ...
+
+Line contains only whitespace (blank line)
+^\s*$
+
+Trim leading/trailing whitespace (search for capture)
+^\s+|\s+$   # replace with empty string
+
+HTML tag (opening tag simple)
+^<([A-Za-z][A-Za-z0-9-]*)(\s[^>]*)?>$
+
+
+Match whole word (word boundary)
+\bword\b
+
+
+| Character          | Meaning                                                   |
+| ------------------ | --------------------------------------------------------- |
+| `a`, `b`, `c`, ... | Matches the literal character `a`, `b`, `c`, etc.         |
+| `.`                | Matches **any single character** except a newline (`\n`). |
+
+| Character | Meaning                                               |
+| --------- | ----------------------------------------------------- |
+| `^`       | Matches the **start of a line**.                      |
+| `$`       | Matches the **end of a line**.                        |
+| `\b`      | Matches a **word boundary** (start or end of a word). |
+| `\B`      | Matches **not a word boundary**.                      |
+
+| Syntax   | Meaning                                                 |
+| -------- | ------------------------------------------------------- |
+| `[abc]`  | Matches **any one** of the characters `a`, `b`, or `c`. |
+| `[^abc]` | Matches **any character except** `a`, `b`, or `c`.      |
+| `[a-z]`  | Matches any lowercase letter from `a` to `z`.           |
+| `[A-Z]`  | Matches any uppercase letter from `A` to `Z`.           |
+| `[0-9]`  | Matches any digit from `0` to `9`.                      |
+| `\d`     | Matches any digit (`[0-9]`).                            |
+| `\D`     | Matches any non-digit.                                  |
+| `\w`     | Matches any word character (`[a-zA-Z0-9_]`).            |
+| `\W`     | Matches any non-word character.                         |
+| `\s`     | Matches any whitespace character (space, tab, newline). |
+| `\S`     | Matches any non-whitespace character.                   |
+
+| Syntax  | Meaning                                                          |
+| ------- | ---------------------------------------------------------------- |
+| `*`     | Matches **0 or more** of the preceding element.                  |
+| `+`     | Matches **1 or more** of the preceding element.                  |
+| `?`     | Matches **0 or 1** of the preceding element (makes it optional). |
+| `{n}`   | Matches **exactly n** repetitions of the preceding element.      |
+| `{n,}`  | Matches **n or more** repetitions.                               |
+| `{n,m}` | Matches **between n and m** repetitions.                         |
+
+| Syntax    | Meaning                                                           |                                |
+| --------- | ----------------------------------------------------------------- | ------------------------------ |
+| `(abc)`   | Groups characters together; matches `abc` as a unit.              |                                |
+| `(?:abc)` | Non-capturing group; groups without capturing for backreferences. |                                |
+| `a        | b`                                                                | Matches either `a` **or** `b`. |
+
+
+| Syntax | Meaning                                         |
+| ------ | ----------------------------------------------- |
+| `\.`   | Matches a literal `.` instead of any character. |
+| `\\`   | Matches a literal backslash.                    |
+| `\n`   | Matches a newline.                              |
+| `\t`   | Matches a tab.                                  |
+| `\r`   | Matches a carriage return.                      |
+
+| Syntax     | Meaning                                                     |
+| ---------- | ----------------------------------------------------------- |
+| `(?=...)`  | Positive lookahead: matches if `...` **follows**.           |
+| `(?!...)`  | Negative lookahead: matches if `...` **does NOT follow**.   |
+| `(?<=...)` | Positive lookbehind: matches if `...` **precedes**.         |
+| `(?<!...)` | Negative lookbehind: matches if `...` **does NOT precede**. |
+
+| Syntax | Meaning                                         |
+| ------ | ----------------------------------------------- |
+| `\A`   | Matches the **start of the string** (not line). |
+| `\Z`   | Matches the **end of the string** (not line).   |
+| `\G`   | Matches where the **previous match ended**.     |
+
+
+
+Escaping Restricted Shells
+
+A restricted shell is a type of shell that limits the user's ability to execute commands.
+
+Some common examples of restricted shells include the rbash shell in Linux and the "Restricted-access Shell" in Windows.
+
+Restricted Bourne shell (rbash) is a restricted version of the Bourne shell, a standard command-line interpreter in Linux which limits the user's ability to use certain features of the Bourne shell,
+
+
+it may be possible to escape from a restricted shell by injecting commands into the command line or other inputs the shell accepts. For example, suppose the shell allows users to execute commands by passing them as arguments to a built-in command. In that case, it may be possible to escape from the shell by injecting additional commands into the argument.
+
+
+Command injection
+Imagine that we are in a restricted shell that allows us to execute commands by passing them as arguments to the ls command.
+
+Unfortunately, the shell only allows us to execute the ls command with a specific set of arguments, such as ls -l or ls -a, but it does not allow us to execute any other commands. 
+
+
+we can use command injection to escape from the shell by injecting additional commands into the argument of the ls command.
+
+ls -l `pwd` 
+
+
+Command Substitution
+
+This involves using the shell's command substitution syntax to execute a command. For example, imagine the shell allows users to execute commands by enclosing them in backticks (`). In that case, it may be possible to escape from the shell by executing a command in a backtick substitution that is not restricted by the shell.
+
+
+Command Chaining
+In some cases, it may be possible to escape from a restricted shell by using command chaining. We would need to use multiple commands in a single command line, separated by a shell metacharacter, such as a semicolon (;) or a vertical bar (|), to execute a command. For example, if the shell allows users to execute commands separated by semicolons, it may be possible to escape from the shell by using a semicolon to separate two commands, one of which is not restricted by the shell.
+
+Environment Variables
+For escaping from a restricted shell to use environment variables involves modifying or creating environment variables that the shell uses to execute commands that are not restricted by the shell. For example, if the shell uses an environment variable to specify the directory in which commands are executed, it may be possible to escape from the shell by modifying the value of the environment variable to specify a different directory.
+
+
+Shell Functions
+In some cases, it may be possible to escape from a restricted shell by using shell functions. For this we can define and call shell functions that execute commands not restricted by the shell. Let us say, the shell allows users to define and call shell functions, it may be possible to escape from the shell by defining a shell function that executes a command.
+
+
+first try to figure out what commands you are able to use,
+
+in this case we can use echo
+
+we can use echo command
+
+echo "$(cat flag.txt)"
+
+we can change cat to be <
+
+echo "$( < flag.txt)"
+
+
+Special Permissions
+
+
+Set User ID upon Execution (setuid) permission can allow a user to execute a program or script with the permissions of another user, typically with elevated privileges. The setuid bit appears as an s.
+
+
+find / -user root -perm -4000 -exec ls -ldb {} \; 2>/dev/null
+
+It may be possible to reverse engineer the program with the SETUID bit set, identify a vulnerability, and exploit this to escalate our privileges.
+
+if the setuid bit is set on them, these can be used for our purpose.
+
+The Set-Group-ID (setgid) permission is another special permission that allows us to run binaries as if we were part of the group that created them. 
+
+These files can be enumerated using the following command: find / -uid 0 -perm -6000 -type f 2>/dev/null. 
+
+These files can be leveraged in the same manner as setuid binaries to escalate privileges.
+
+find / -user root -perm -6000 -exec ls -ldb {} \; 2>/dev/null
+
+The GTFOBins project is a curated list of binaries and scripts that can be used by an attacker to bypass security restrictions. 
+
+apt-get can be used to break out of restricted environments and spawn a shell by adding a Pre-Invoke command:
+
+sudo apt-get update -o APT::Update::Pre-Invoke::=/bin/sh
+
+
+Sudo Rights Abuse
+
+check sudo -l
+
+a user may be granted root-level permissions without requiring a password
+
+Or the permitted command line might be specified too loosely, allowing us to run a program in an unintended way, resulting in privilege escalation
+
+
+if the sudoers file is edited to grant a user the right to run a command such as tcpdump per the following entry in the sudoers file: (ALL) NOPASSWD: /usr/sbin/tcpdump an attacker could leverage this to take advantage of a the postrotate-command option.
+
+
+Privileged Groups
+
+LXC / LXD
+
+LXD is similar to Docker and is Ubuntu's container manager. Upon installation, all users are added to the LXD group.
+
+Membership of this group can be used to escalate privileges by creating an LXD container, making it privileged, and then accessing the host file system at /mnt/root
+
+grep what rights a user has 
+
+grep '^username:' /etc/group
+
+see what commands user can run 
+
+grep -R 'secaudit' /etc/sudoers /etc/sudoers.d/
+
+Grep within the directory this user has special rights over.
+
+sudo -u secaudit grep -RIn --binary-files=without-match 'PATTERN' /path/to/dir
+
+Grep only files owned by that user
+
+find files and directories that belong to certain group
+
+files
+find / -type f -group adm 2>/dev/null
+
+directories
+find / -type d -group adm 2>/dev/null
+
+use grep to search all files that contain the word flag within the var directory
+
+grep -RIn --binary-files=without-match 'flag' /var 2>/dev/null

@@ -178,3 +178,5 @@ https://github.com/omer-efe-curkus/CVE-2025-32433-Erlang-OTP-SSH-RCE-PoC
 
 use ps aux and connect with known credentials
 
+ps aux | grep root
+
