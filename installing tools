@@ -26,6 +26,8 @@ sudo apt install libemail-outlook-message-perl
 
 install git-dumper: pipx install git-dumper
 
+install ftp
+sudo apt install ftp
 
 
 installing nuclei: 
