@@ -57,3 +57,14 @@ installing cupp
 CUPP will then take your inputs and create a comprehensive list of potential passwords
 sudo apt install cupp -y
 
+
+
+installing feroxbuster 
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+cargo install feroxbuster
+~/.cargo/bin/feroxbuster
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+feroxbuster --version

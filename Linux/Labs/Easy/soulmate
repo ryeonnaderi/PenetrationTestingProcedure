@@ -81,7 +81,11 @@ we can start searching for databases
 
 start searching for config files in the soulmate.htb folder 
 
+use  hashid -m {hash} and verify the encryption
+
+
 use hashcat bcrypt mode to break the hash
+
 
 hashcat -m 3200 -a 0 passwordhash /usr/share/wordlists/rockyou.txt 
 
@@ -178,5 +182,12 @@ https://github.com/omer-efe-curkus/CVE-2025-32433-Erlang-OTP-SSH-RCE-PoC
 
 use ps aux and connect with known credentials
 
-ps aux | grep root
+ ps aux | grep beam.smp
 
+
+ps aux | grep beam.smp
+
+
+If you want every running Erlang VM (including unnamed ones), inspect OS processes:
+ps aux | egrep 'beam.smp|erl'
+pgrep -a beam.smp

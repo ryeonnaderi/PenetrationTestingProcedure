@@ -1,0 +1,21 @@
+nmap -sVC -vv -oa nmap/forgotten ip address
+
+trying to access the port 80 is  showing forbidden
+
+we can try to scan all ports using -p- 
+
+nmap -sVC -vv -p- -oA nmap/forgotten ip address
+
+that did not work either
+
+give the domain a name in /etc/hosts
+
+
+use feroxbuster 
+feroxbuster -u http://forgotten.htb -x php, html,txt -w /opt/SecLists/Discovery/Web-Content/raft-medium-words.txt -q -C 404, 403
+
+we found 
+http://forgotten.htb/survey/LICENSE
+
+we remove the License 
+http://forgotten.htb/survey
